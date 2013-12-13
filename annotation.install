@@ -100,6 +100,18 @@ function annotation_schema() {
 }
 
 /**
+ * Implements hook_install().
+ */
+function annotation_install() {
+  if (module_exists('entitycache') && !db_table_exists('cache_entity_annotation')) {
+    $schema = drupal_get_schema_unprocessed('system', 'cache');
+    $schema['description'] = "Cache table used to store annotation entity records.";
+    db_create_table('cache_entity_annotation', $schema);
+  }
+}
+
+
+/**
  * Implements hook_uninstall().
  */
 function annotation_uninstall() {
