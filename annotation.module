@@ -368,3 +368,45 @@ function annotation_ctools_plugin_type() {
     ),
   );
 }
+
+
+/**
+ * Given a URL, find the node ID and revision ID for that URL, if available.
+ * @return array with nid and vid keys
+ */
+function _annotation_nid_vid_from_uri($uri) {
+  $return = array(
+    'nid' => 0,
+    'vid' => 0,
+  );
+
+  if ($parsed = parse_url($uri)) {
+    $path = drupal_get_normal_path(urldecode(ltrim($parsed['path'], '/')));
+
+    // Check if it's a node path
+    $matches = array();
+    if (preg_match('@^node/(\d+)@', $path, $matches)) {
+      $return['nid'] = $matches[1];
+
+      // Check if this is the draft path
+      if (preg_match('@^node/(\d+)/draft@', $path)) {
+        $query = db_select('workbench_moderation_node_history', 'h')->condition('nid', $return['nid']);
+        $query->addExpression('MAX(vid)', 'vid');
+        $return['vid'] = $query->execute()->fetchField();
+      }
+      // Check if viewing a particular revision
+      elseif (preg_match('@^node/(\d+)/revisions/(\d+)/view@', $path, $matches)) {
+        $return['vid'] = $matches[2];
+      }
+      // Assume published revision
+      else {
+        $return['vid'] = db_select('node', 'n')
+          ->fields('n', array('vid'))
+          ->condition('nid', $return['nid'])
+          ->execute()
+          ->fetchField();
+      }
+    }
+  }
+  return $return;
+}

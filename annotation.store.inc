@@ -73,34 +73,9 @@ function annotation_api_create() {
     $entity->updated = REQUEST_TIME;
 
     // Try to find a nid and/or vid in the URL
-    if ($parsed = parse_url($entity->uri)) {
-      $path = drupal_get_normal_path(urldecode(ltrim($parsed['path'], '/')));
-
-      // Check if it's a node path
-      $matches = array();
-      if (preg_match('@^node/(\d+)@', $path, $matches)) {
-        $entity->nid = $matches[1];
-
-        // Check if this is the draft path
-        if (preg_match('@^node/(\d+)/draft@', $path)) {
-          $query = db_select('workbench_moderation_node_history', 'h')->condition('nid', $entity->nid);
-          $query->addExpression('MAX(vid)', 'vid');
-          $entity->vid = $query->execute()->fetchField();
-        }
-        // Check if viewing a particular revision
-        elseif (preg_match('@^node/(\d+)/revisions/(\d+)/view@', $path, $matches)) {
-          $entity->vid = $matches[2];
-        }
-        // Assume published revision
-        else {
-          $entity->vid = db_select('node', 'n')
-            ->fields('n', array('vid'))
-            ->condition('nid', $entity->nid)
-            ->execute()
-            ->fetchField();
-        }
-      }
-    }
+    $node_info = _annotation_nid_vid_from_uri($entity->uri);
+    $entity->nid = $node_info['nid'];
+    $entity->vid = $node_info['vid'];
 
     $entity = annotation_api_entity_prepare($entity, 'create');
     entity_save('annotation', $entity);
@@ -223,7 +198,17 @@ function annotation_api_search() {
     $query->propertyCondition('quote', $quote, 'LIKE');
   }
   if ($uri) {
-    $query->propertyCondition('uri', $uri);
+    // Search on a URI. Check if we can get a nid/vid from that URI and search
+    // for those instead
+    $node_info = _annotation_nid_vid_from_uri($uri);
+    if ($node_info['nid'] > 0 && $node_info['vid'] > 0) {
+      $query->propertyCondition('nid', $node_info['nid']);
+      $query->propertyCondition('vid', $node_info['vid']);
+    }
+    // No nid/vid found, just use the URI
+    else {
+      $query->propertyCondition('uri', $uri);
+    }
   }
   if (is_array($tags)) {
     foreach($tags as $tag) {
