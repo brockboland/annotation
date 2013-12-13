@@ -27,6 +27,88 @@ class AnnotationAPIController extends EntityAPIController {
 
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
     $wrapper = entity_metadata_wrapper('annotation', $entity);
+
+
+    $account = user_load($wrapper->uid->value());
+    if ($account) {
+      $uri = $wrapper->uri->value(array('sanitize' => TRUE));
+
+      $content['author'] = array(
+        '#theme' => 'field',
+        '#weight' => 0,
+        '#title' =>t('Created by'),
+        '#access' => TRUE,
+        '#label_display' => 'above',
+        '#view_mode' => 'full',
+        '#language' => LANGUAGE_NONE,
+        '#field_name' => 'field_fake_author',
+        '#field_type' => 'text',
+        '#entity_type' => 'annotation',
+        '#bundle' => $entity->type,
+        '#items' => array(
+          array('value' => theme('username', array('account' => $account)))
+        ),
+        '#formatter' => 'text_default',
+        0 => array(
+          '#markup' => theme('username', array('account' => $account))
+        )
+      );
+    }
+
+    $nid = $wrapper->nid->value();
+    $vid = $wrapper->vid->value();
+    if ($node = node_load($nid)) {
+      if ($vid > 0) {
+        $link = l($node->title, 'node/' . $nid . '/revisions/' . $vid . '/view');
+      }
+      else {
+        $link = l($node->title, 'node/' . $nid);
+      }
+      $content['node'] = array(
+        '#theme' => 'field',
+        '#weight' => 0,
+        '#title' =>t('Node'),
+        '#access' => TRUE,
+        '#label_display' => 'above',
+        '#view_mode' => 'full',
+        '#language' => LANGUAGE_NONE,
+        '#field_name' => 'field_fake_node',
+        '#field_type' => 'text',
+        '#entity_type' => 'annotation',
+        '#bundle' => $entity->type,
+        '#items' => array(
+          array('value' => $link)
+        ),
+        '#formatter' => 'text_default',
+        0 => array(
+          '#markup' => $link
+        )
+      );
+    }
+
+    $formatted_date = format_date($wrapper->created->value(array('sanitize' => TRUE)));
+    $content['date'] = array(
+      '#theme' => 'field',
+      '#weight' => 0,
+      '#title' =>t('Date'),
+      '#access' => TRUE,
+      '#label_display' => 'above',
+      '#view_mode' => 'full',
+      '#language' => LANGUAGE_NONE,
+      '#field_name' => 'field_fake_author',
+      '#field_type' => 'text',
+      '#entity_type' => 'annotation',
+      '#bundle' => $entity->type,
+      '#items' => array(
+        array('value' => $formatted_date)
+      ),
+      '#formatter' => 'text_default',
+      0 => array(
+        '#markup' => $formatted_date
+      )
+    );
+
+
     $content['quote'] = array(
       '#theme' => 'field',
       '#weight' => 0,
@@ -67,16 +149,7 @@ class AnnotationAPIController extends EntityAPIController {
         '#markup' => check_plain($entity->text)
       )
     );
-    // $content['author'] = array(
-    //   '#markup' => t('Created by: @author on @date at !uri', array(
-    //     '@author' => $wrapper->user->name->value(array('sanitize' => TRUE)),
-    //     '@date' => format_date($wrapper->created->value(array('sanitize' => TRUE))),
-    //     '!uri' => l($wrapper->uri->value(array('sanitize' => TRUE)), $wrapper->uri->value(array('sanitize' => TRUE))),
-    //   ))
-    // );
-    // $user = $wrapper->user->name->value();
-    // dsm(get_properties($wrapper));
-    // dsm($user);
+
     $content['#view_mode'] = $view_mode;
     return parent::buildContent($entity, $view_mode, $langcode, $content);
   }
