@@ -72,6 +72,36 @@ function annotation_api_create() {
     $entity->created = REQUEST_TIME;
     $entity->updated = REQUEST_TIME;
 
+    // Try to find a nid and/or vid in the URL
+    if ($parsed = parse_url($entity->uri)) {
+      $path = drupal_get_normal_path(urldecode(ltrim($parsed['path'], '/')));
+
+      // Check if it's a node path
+      $matches = array();
+      if (preg_match('@^node/(\d+)@', $path, $matches)) {
+        $entity->nid = $matches[1];
+
+        // Check if this is the draft path
+        if (preg_match('@^node/(\d+)/draft@', $path)) {
+          $query = db_select('workbench_moderation_node_history', 'h')->condition('nid', $entity->nid);
+          $query->addExpression('MAX(vid)', 'vid');
+          $entity->vid = $query->execute()->fetchField();
+        }
+        // Check if viewing a particular revision
+        elseif (preg_match('@^node/(\d+)/revisions/(\d+)/view@', $path, $matches)) {
+          $entity->vid = $matches[2];
+        }
+        // Assume published revision
+        else {
+          $entity->vid = db_select('node', 'n')
+            ->fields('n', array('vid'))
+            ->condition('nid', $entity->nid)
+            ->execute()
+            ->fetchField();
+        }
+      }
+    }
+
     $entity = annotation_api_entity_prepare($entity, 'create');
     entity_save('annotation', $entity);
 
@@ -204,7 +234,7 @@ function annotation_api_search() {
   // Get the total
   $count_query = clone $query;
   $total = $count_query->count()->execute();
-  
+
   // Set query range
   if ($limit > 0) {
     $query->range($offset, $limit);

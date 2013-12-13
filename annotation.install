@@ -71,6 +71,18 @@ function annotation_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'nid' => array(
+        'description' => t('ID of the node that was annotated'),
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'vid' => array(
+        'description' => t('Revision ID of the node that was annotated'),
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
     ),
     'indexes' => array(
       'uid' => array('uid'),
@@ -80,6 +92,7 @@ function annotation_schema() {
     ),
     'foreign keys' => array(
       'uid' => array('users' => 'uid'),
+      'nid' => array('node' => 'nid'),
     ),
     'primary key' => array('id'),
   );
@@ -91,4 +104,27 @@ function annotation_schema() {
  */
 function annotation_uninstall() {
   variable_del('annotator_store');
+}
+
+
+/**
+ * Add node and revision ID columns to annotation store.
+ */
+function annotation_update_7001() {
+  $new_columns = array(
+    'nid' => array(
+      'description' => t('ID of the node that was annotated'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+    'vid' => array(
+      'description' => t('Revision ID of the node that was annotated'),
+      'type' => 'int',
+      'not null' => FALSE,
+      'default' => 0,
+    ),
+  );
+  db_add_field('annotation', 'nid', $new_columns['nid']);
+  db_add_field('annotation', 'vid', $new_columns['vid']);
 }
