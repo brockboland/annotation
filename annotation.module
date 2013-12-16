@@ -1,4 +1,8 @@
 <?php
+
+define('ANNOTATION_STATUS_OPEN', 0);
+define('ANNOTATION_STATUS_PROCESSED', 1);
+
 /**
  * Implements hook_permission().
  */
