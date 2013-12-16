@@ -121,7 +121,7 @@ function annotation_entity_property_info_alter(&$info) {
     'schema field' => 'updated',
     'description' => t('The date the annotation was last updated.'),
   );
-  $properties['user'] = array(
+  $properties['uid'] = array(
     'label' => t('Author'),
     'type' => 'user',
     'description' => t('The author of the annotation.'),
@@ -129,6 +129,54 @@ function annotation_entity_property_info_alter(&$info) {
     'setter permission' => 'administer annotations',
     'required' => TRUE,
     'schema field' => 'uid',
+  );
+  $properties['nid'] = array(
+    'label' => t('Node'),
+    'type' => 'node',
+    'description' => t('The node where the annotation was made.'),
+    'schema field' => 'nid',
+  );
+  $properties['vid'] = array(
+    'label' => t('Revision ID'),
+    'type' => 'integer',
+    'description' => t('The node revision where the annotation was made.'),
+    'schema field' => 'vid',
+  );
+  $properties['status'] = array(
+    'label' => t('Processed status'),
+    'type' => 'boolean',
+    'description' => t('Whether or not the annotation has been processed.'),
+    'schema field' => 'status',
+  );
+  $properties['created'] = array(
+    'label' => t('Creation timestamp'),
+    'type' => 'date',
+    'description' => t('Date/time that the annotation was created.'),
+    'schema field' => 'created',
+  );
+  $properties['updated'] = array(
+    'label' => t('Updated timestamp'),
+    'type' => 'date',
+    'description' => t('Date/time that the annotation was last updated.'),
+    'schema field' => 'updated',
+  );
+  $properties['text'] = array(
+    'label' => t('Annotation text'),
+    'type' => 'text',
+    'description' => t('Annotation node.'),
+    'schema field' => 'text',
+  );
+  $properties['quote'] = array(
+    'label' => t('Highlighted text'),
+    'type' => 'text',
+    'description' => t('The text that was highlighted for the annotation.'),
+    'schema field' => 'quote',
+  );
+  $properties['uri'] = array(
+    'label' => t('Annotation URI'),
+    'type' => 'uri',
+    'description' => t('The path saved for the annotation. DO NOT USE. This will not always point to the correct node revision, if further revisions are made to a node.'),
+    'schema field' => 'uri',
   );
 }
 
