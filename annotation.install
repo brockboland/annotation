@@ -123,6 +123,10 @@ function annotation_install() {
  */
 function annotation_uninstall() {
   variable_del('annotator_store');
+
+  if (db_table_exists('cache_entity_annotation')) {
+    db_drop_table('cache_entity_annotation');
+  }
 }
 
 
