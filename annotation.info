@@ -8,6 +8,7 @@ configure = admin/structure/annotation
 files[] = annotation.class.inc
 files[] = annotation.controller.inc
 files[] = plugins/annotator/StoreAnnotatorPlugin.class.inc
+files[] = plugins/annotator/ProcessedAnnotatorPlugin.class.inc
 
 dependencies[] = ctools
 dependencies[] = entity
