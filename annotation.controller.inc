@@ -69,10 +69,10 @@ class AnnotationAPIController extends EntityAPIController {
     if (is_object($node)) {
       $vid = $wrapper->vid->value();
       if ($vid > 0) {
-        $link = l($node->title, 'node/' . $nid . '/revisions/' . $vid . '/view');
+        $link = l($node->title, 'node/' . $node->nid . '/revisions/' . $vid . '/view');
       }
       else {
-        $link = l($node->title, 'node/' . $nid);
+        $link = l($node->title, 'node/' . $node->nid);
       }
       $content['node'] = array(
         '#theme' => 'field',
