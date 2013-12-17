@@ -28,9 +28,13 @@ class AnnotationAPIController extends EntityAPIController {
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
     $wrapper = entity_metadata_wrapper('annotation', $entity);
 
-
-    $account = user_load($wrapper->uid->value());
-    if ($account) {
+    $account = $wrapper->uid->value();
+    // Since uid is configured as a user property, $account should be an
+    // account object, but just in case
+    if (is_numeric($account)) {
+      $account = user_load($account);
+    }
+    if (is_object($account)) {
       $uri = $wrapper->uri->value(array('sanitize' => TRUE));
 
       $content['author'] = array(
@@ -55,9 +59,15 @@ class AnnotationAPIController extends EntityAPIController {
       );
     }
 
-    $nid = $wrapper->nid->value();
-    $vid = $wrapper->vid->value();
-    if ($node = node_load($nid)) {
+    $node = $wrapper->nid->value();
+    // nid property is configured as a node, so this should be a node object,
+    // but just in case
+    if (is_numeric($node)) {
+      $node = node_load($node);
+    }
+
+    if (is_object($node)) {
+      $vid = $wrapper->vid->value();
       if ($vid > 0) {
         $link = l($node->title, 'node/' . $nid . '/revisions/' . $vid . '/view');
       }
@@ -155,22 +165,18 @@ class AnnotationAPIController extends EntityAPIController {
   }
 }
 
-function get_properties($obj, $values=false)
-{
-    $obj_dump  = print_r($obj, 1);
-    $matches =  array();
-    preg_match_all('/^\s+\[(\w+).*\] => (\w*)/m', $obj_dump, $matches);
-    if ($values)
-    {
-        $output = array();
-        foreach ($matches[1] as $key => $property)
-        {
-            $output[$property] = $matches[2][$key];
-        }
-        return $output;
+function get_properties($obj, $values=false) {
+  $obj_dump  = print_r($obj, 1);
+  $matches =  array();
+  preg_match_all('/^\s+\[(\w+).*\] => (\w*)/m', $obj_dump, $matches);
+  if ($values) {
+    $output = array();
+    foreach ($matches[1] as $key => $property) {
+      $output[$property] = $matches[2][$key];
     }
-    else
-    {
-        return $matches[1];
-    }
+    return $output;
+  }
+  else {
+    return $matches[1];
+  }
 }
