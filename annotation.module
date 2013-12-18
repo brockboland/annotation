@@ -427,14 +427,23 @@ function annotation_ctools_plugin_type() {
  * @return array with nid and vid keys
  */
 function _annotation_nid_vid_from_uri($uri) {
+  global $base_url;
+
   $return = array(
     'nid' => 0,
     'vid' => 0,
   );
 
-  if ($parsed = parse_url($uri)) {
+  $path = FALSE;
+  if (strpos($uri, $base_url) === 0) {
+    $path = ltrim(substr($uri, strlen($base_url)), '/');
+    $path = drupal_get_normal_path(urldecode($path));
+  }
+  elseif ($parsed = parse_url($uri)) {
     $path = drupal_get_normal_path(urldecode(ltrim($parsed['path'], '/')));
+  }
 
+  if ($path) {
     // Check if it's a node path
     $matches = array();
     if (preg_match('@^node/(\d+)@', $path, $matches)) {
