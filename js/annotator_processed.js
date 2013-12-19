@@ -59,6 +59,11 @@
             // Loop over the highlights included in the annotation
             // (should only be 1)
             $.each(annotation.highlights, function(index, highlight) {
+              // Add a class for the annotation ID, while we're at it
+              if (!$(highlight).hasClass('annotation-id-' + annotation.id)) {
+                $(highlight).addClass('annotation-id-' + annotation.id)
+              }
+
               // If processed, add processed class
               if (annotation.status > 0) {
                 $(highlight).addClass('highlight-processed');
